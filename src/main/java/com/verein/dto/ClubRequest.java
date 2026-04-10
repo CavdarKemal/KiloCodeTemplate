@@ -1,6 +1,6 @@
 package com.verein.dto;
 
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import java.time.LocalDate;
 

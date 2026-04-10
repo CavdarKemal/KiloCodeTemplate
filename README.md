@@ -35,14 +35,14 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 
 | Kategorie | Technologie | Version |
 |-----------|-------------|---------|
-| Framework | Spring Boot | 2.7.18 |
-| Java Version | OpenJDK / Eclipse Temurin | 8 |
+| Framework | Spring Boot | 4.0.5 |
+| Java Version | OpenJDK / JDK | 25 |
 | Datenbank | PostgreSQL | 15 |
-| Build-Tool | Maven | 3.5.3 |
+| Build-Tool | Maven | 4.0.0 |
 | ORM | Spring Data JPA / Hibernate | - |
 | Testing | JUnit 5, Mockito, Spring Test | - |
-| E2E Testing | Testcontainers, RestAssured | 1.17.6 |
-| Lombok | Project Lombok | - |
+| E2E Testing | Testcontainers, RestAssured | 1.20.0 / 5.5.0 |
+| Lombok | Project Lombok | 1.18.40 |
 
 ---
 
@@ -182,10 +182,31 @@ curl http://localhost:8081/api/clubs
 
 ### Voraussetzungen
 
-- Java 8 oder höher
-- Maven 3.5+
+- Java 8, 11, 17, 21 oder 25 (JDK 25 wird empfohlen)
+- Maven 4.0.0 (wird automatisch durch ci/cit.cmd verwendet)
 - PostgreSQL 15 (für lokale Entwicklung)
 - Docker und Docker Compose (optional)
+
+### Build-Befehle
+
+Das Projekt enthält `ci.cmd` und `cit.cmd` Skripte für einfaches Kompilieren:
+
+| Befehl | Beschreibung |
+|--------|---------------|
+| `ci 25` | Kompiliert ohne Tests (JDK 25, Maven 4) |
+| `cit 25` | Kompiliert mit Tests (JDK 25, Maven 4) |
+| `ci 21` | Kompiliert ohne Tests (JDK 21, Maven 4) |
+| `cit 21` | Kompiliert mit Tests (JDK 21, Maven 4) |
+
+Alternative mit direktem Maven-Aufruf:
+
+```bash
+# Kompilieren ohne Tests
+mvn clean compile -DskipTests
+
+# Kompilieren mit Tests
+mvn clean test
+```
 
 ### Lokale Entwicklung
 
@@ -206,9 +227,14 @@ curl http://localhost:8081/api/clubs
        password: postgres
    ```
 
-3. **Projekt kompilieren**
+3. **Projekt kompilieren (JDK 25)**
    ```bash
-   mvn clean compile
+   ci 25
+   ```
+
+   Oder mit direktem Maven (Java 25 muss installiert sein):
+   ```bash
+   mvn clean compile -DskipTests
    ```
 
 4. **Anwendung starten**
@@ -217,6 +243,20 @@ curl http://localhost:8081/api/clubs
    ```
 
    Die Anwendung ist dann unter `http://localhost:8080` erreichbar.
+
+---
+
+## Spring Boot 4 Änderungen
+
+Dieses Projekt verwendet Spring Boot 4.0.5 mit Java 25. Es gibt einige Breaking Changes gegenüber Spring Boot 2/3:
+
+### Wichtige Änderungen
+- **Jakarta EE**: Alle `javax.*` Packages wurden durch `jakarta.*` ersetzt
+- **@MockBean entfernt**: Verwende stattdessen `@MockitoBean`
+- **@SpyBean entfernt**: Verwende stattdessen `@MockitoSpyBean`
+- **TestEntityManager entfernt**: Verwende standard `EntityManager`
+- **Modulare Test-Starter**: `spring-boot-starter-webmvc-test` und `spring-boot-starter-data-jpa-test` werden separat benötigt
+- **Java 21+ erforderlich**: Spring Boot 4 benötigt mindestens Java 21
 
 ---
 

@@ -4,10 +4,10 @@ import com.verein.entity.Club;
 import com.verein.entity.Member;
 import com.verein.entity.MembershipStatus;
 import com.verein.entity.MembershipType;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
 class MemberRepositoryTest {
 
     @Autowired
-    private TestEntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
     private MemberRepository memberRepository;

@@ -3,7 +3,7 @@ package com.verein.controller;
 import com.verein.dto.ClubRequest;
 import com.verein.dto.ClubResponse;
 import com.verein.service.ClubService;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
