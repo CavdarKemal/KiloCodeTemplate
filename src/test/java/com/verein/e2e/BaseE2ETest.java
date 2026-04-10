@@ -13,7 +13,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 public abstract class BaseE2ETest {
 
     @LocalServerPort
-    static int port;
+    private int port;
+
+    public int getPort() {
+        return port;
+    }
 
     @Container
     static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:15-alpine")

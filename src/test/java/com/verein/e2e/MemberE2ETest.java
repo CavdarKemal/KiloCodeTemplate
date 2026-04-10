@@ -15,7 +15,7 @@ class MemberE2ETest extends BaseE2ETest {
 
     @BeforeEach
     void setUp() {
-        RestAssured.port = port;
+        RestAssured.port = getPort();
         createTestClub();
     }
 
