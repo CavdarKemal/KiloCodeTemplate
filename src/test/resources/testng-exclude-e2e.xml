@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="Exclude E2E Tests" parallel="classes" thread-count="4">
+    <test name="Unit and Integration Tests">
+        <packages>
+            <package name="com.verein.service"/>
+            <package name="com.verein.controller"/>
+            <package name="com.verein.repository"/>
+        </packages>
+    </test>
+</suite>
