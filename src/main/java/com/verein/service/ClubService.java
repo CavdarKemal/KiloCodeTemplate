@@ -12,6 +12,8 @@ public interface ClubService {
     List<ClubResponse> getAllClubs();
     PagedResponse<ClubResponse> getClubsPaginated(Pageable pageable);
     PagedResponse<ClubResponse> searchClubs(String searchTerm, Pageable pageable);
+    List<ClubResponse> getDeletedClubs();
     ClubResponse updateClub(Long id, ClubRequest request);
-    void deleteClub(Long id);
+    void deleteClub(Long id, String deletedBy);
+    ClubResponse restoreClub(Long id);
 }

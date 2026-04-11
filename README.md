@@ -30,6 +30,7 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 - **Rollenbasierte Zugriffskontrolle**: @PreAuthorize für ADMIN und USER Rollen
 - **Pagination**: Paginiertes Abrufen mit Such- und Filterfunktionen
 - **CORS Support**: Unterstützung für React, Angular, Vue.js Frontends
+- **Soft Delete**: Gelöschte Daten können wiederhergestellt werden
 - **Validierung**: Automatische Validierung von Eingabedaten
 - **Fehlerbehandlung**: Zentrale Ausnahmebehandlung mit aussagekräftigen Fehlermeldungen
 
@@ -150,8 +151,10 @@ verein-verwaltung/
 | GET | `/api/clubs/{id}` | Verein nach ID abrufen | USER/ADMIN |
 | GET | `/api/clubs/paginated` | Vereine paginiert abrufen | USER/ADMIN |
 | GET | `/api/clubs/search?search=` | Vereine suchen | USER/ADMIN |
+| GET | `/api/clubs/deleted` | Gelöschte Vereine abrufen | ADMIN |
 | PUT | `/api/clubs/{id}` | Verein aktualisieren | ADMIN |
-| DELETE | `/api/clubs/{id}` | Verein löschen | ADMIN |
+| DELETE | `/api/clubs/{id}` | Soft Delete Verein | ADMIN |
+| PUT | `/api/clubs/{id}/restore` | Gelöschten Verein wiederherstellen | ADMIN |
 
 ### Mitglieder (Members)
 
@@ -166,8 +169,10 @@ verein-verwaltung/
 | GET | `/api/members/search?search=` | Mitglieder suchen | USER/ADMIN |
 | GET | `/api/members/status/{status}` | Mitglieder nach Status | USER/ADMIN |
 | GET | `/api/members/type/{type}` | Mitglieder nach Typ | USER/ADMIN |
+| GET | `/api/members/deleted` | Gelöschte Mitglieder abrufen | ADMIN |
 | PUT | `/api/members/{id}` | Mitglied aktualisieren | ADMIN |
-| DELETE | `/api/members/{id}` | Mitglied löschen | ADMIN |
+| DELETE | `/api/members/{id}` | Soft Delete Mitglied | ADMIN |
+| PUT | `/api/members/{id}/restore` | Gelöschtes Mitglied wiederherstellen | ADMIN |
 
 ### Beispiele
 

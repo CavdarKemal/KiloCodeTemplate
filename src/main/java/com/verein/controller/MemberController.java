@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -114,6 +115,12 @@ public class MemberController {
         return ResponseEntity.ok(memberService.getMembersByType(type, pageable));
     }
 
+    @GetMapping("/deleted")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<List<MemberResponse>> getDeletedMembers() {
+        return ResponseEntity.ok(memberService.getDeletedMembers());
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<MemberResponse> updateMember(@PathVariable Long id, @Valid @RequestBody MemberRequest request) {
@@ -122,8 +129,14 @@ public class MemberController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Void> deleteMember(@PathVariable Long id) {
-        memberService.deleteMember(id);
+    public ResponseEntity<Void> deleteMember(@PathVariable Long id, Authentication auth) {
+        memberService.deleteMember(id, auth.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<MemberResponse> restoreMember(@PathVariable Long id) {
+        return ResponseEntity.ok(memberService.restoreMember(id));
     }
 }

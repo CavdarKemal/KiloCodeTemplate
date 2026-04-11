@@ -12,6 +12,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -65,6 +66,12 @@ public class ClubController {
         return ResponseEntity.ok(clubService.searchClubs(search, pageable));
     }
 
+    @GetMapping("/deleted")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<List<ClubResponse>> getDeletedClubs() {
+        return ResponseEntity.ok(clubService.getDeletedClubs());
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ClubResponse> updateClub(@PathVariable Long id, @Valid @RequestBody ClubRequest request) {
@@ -73,8 +80,14 @@ public class ClubController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<Void> deleteClub(@PathVariable Long id) {
-        clubService.deleteClub(id);
+    public ResponseEntity<Void> deleteClub(@PathVariable Long id, Authentication auth) {
+        clubService.deleteClub(id, auth.getName());
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/restore")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<ClubResponse> restoreClub(@PathVariable Long id) {
+        return ResponseEntity.ok(clubService.restoreClub(id));
     }
 }

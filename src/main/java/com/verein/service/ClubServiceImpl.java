@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,8 @@ public class ClubServiceImpl implements ClubService {
                 .description(request.getDescription())
                 .foundedDate(request.getFoundedDate())
                 .city(request.getCity())
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
         club = clubRepository.save(club);
         return mapToResponse(club);
@@ -35,7 +38,7 @@ public class ClubServiceImpl implements ClubService {
     @Override
     @Transactional(readOnly = true)
     public ClubResponse getClubById(Long id) {
-        Club club = clubRepository.findById(id)
+        Club club = clubRepository.findByIdActive(id)
                 .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
         return mapToResponse(club);
     }
@@ -43,7 +46,7 @@ public class ClubServiceImpl implements ClubService {
     @Override
     @Transactional(readOnly = true)
     public List<ClubResponse> getAllClubs() {
-        return clubRepository.findAll().stream()
+        return clubRepository.findAllActive().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -51,7 +54,7 @@ public class ClubServiceImpl implements ClubService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<ClubResponse> getClubsPaginated(Pageable pageable) {
-        Page<Club> page = clubRepository.findAll(pageable);
+        Page<Club> page = clubRepository.findAllActive(pageable);
         List<ClubResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -61,7 +64,7 @@ public class ClubServiceImpl implements ClubService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<ClubResponse> searchClubs(String searchTerm, Pageable pageable) {
-        Page<Club> page = clubRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
+        Page<Club> page = clubRepository.findByNameContainingIgnoreCaseActive(searchTerm, pageable);
         List<ClubResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -69,23 +72,45 @@ public class ClubServiceImpl implements ClubService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<ClubResponse> getDeletedClubs() {
+        return clubRepository.findAllDeleted().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public ClubResponse updateClub(Long id, ClubRequest request) {
-        Club club = clubRepository.findById(id)
+        Club club = clubRepository.findByIdActive(id)
                 .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
         club.setName(request.getName());
         club.setDescription(request.getDescription());
         club.setFoundedDate(request.getFoundedDate());
         club.setCity(request.getCity());
+        club.setUpdatedAt(LocalDateTime.now());
         club = clubRepository.save(club);
         return mapToResponse(club);
     }
 
     @Override
-    public void deleteClub(Long id) {
-        if (!clubRepository.existsById(id)) {
-            throw new RuntimeException("Club nicht gefunden: " + id);
+    public void deleteClub(Long id, String deletedBy) {
+        Club club = clubRepository.findByIdActive(id)
+                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
+        club.softDelete(deletedBy);
+        clubRepository.save(club);
+    }
+
+    @Override
+    public ClubResponse restoreClub(Long id) {
+        Club club = clubRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
+        if (!club.isDeleted()) {
+            throw new RuntimeException("Club ist nicht gelöscht: " + id);
         }
-        clubRepository.deleteById(id);
+        club.restore();
+        club.setUpdatedAt(LocalDateTime.now());
+        club = clubRepository.save(club);
+        return mapToResponse(club);
     }
 
     private ClubResponse mapToResponse(Club club) {

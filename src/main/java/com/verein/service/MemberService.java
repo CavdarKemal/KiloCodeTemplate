@@ -18,6 +18,8 @@ public interface MemberService {
     PagedResponse<MemberResponse> searchMembers(String searchTerm, Pageable pageable);
     PagedResponse<MemberResponse> getMembersByStatus(MembershipStatus status, Pageable pageable);
     PagedResponse<MemberResponse> getMembersByType(MembershipType type, Pageable pageable);
+    List<MemberResponse> getDeletedMembers();
     MemberResponse updateMember(Long id, MemberRequest request);
-    void deleteMember(Long id);
+    void deleteMember(Long id, String deletedBy);
+    MemberResponse restoreMember(Long id);
 }

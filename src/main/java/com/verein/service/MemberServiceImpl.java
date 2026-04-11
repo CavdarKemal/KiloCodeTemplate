@@ -14,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +32,7 @@ public class MemberServiceImpl implements MemberService {
             throw new RuntimeException("Email bereits vorhanden: " + request.getEmail());
         }
         
-        Club club = clubRepository.findById(request.getClubId())
+        Club club = clubRepository.findByIdActive(request.getClubId())
                 .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + request.getClubId()));
 
         Member member = Member.builder()
@@ -45,6 +46,8 @@ public class MemberServiceImpl implements MemberService {
                 .membershipType(request.getMembershipType())
                 .status(request.getStatus() != null ? request.getStatus() : MembershipStatus.ACTIVE)
                 .club(club)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
         
         member = memberRepository.save(member);
@@ -54,7 +57,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public MemberResponse getMemberById(Long id) {
-        Member member = memberRepository.findById(id)
+        Member member = memberRepository.findByIdActive(id)
                 .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
         return mapToResponse(member);
     }
@@ -62,7 +65,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public List<MemberResponse> getAllMembers() {
-        return memberRepository.findAll().stream()
+        return memberRepository.findAllActive().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -70,7 +73,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public List<MemberResponse> getMembersByClub(Long clubId) {
-        return memberRepository.findByClubId(clubId).stream()
+        return memberRepository.findByClubIdActive(clubId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
@@ -78,7 +81,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<MemberResponse> getMembersPaginated(Pageable pageable) {
-        Page<Member> page = memberRepository.findAll(pageable);
+        Page<Member> page = memberRepository.findAllActive(pageable);
         List<MemberResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -88,7 +91,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<MemberResponse> getMembersByClubPaginated(Long clubId, Pageable pageable) {
-        Page<Member> page = memberRepository.findByClubId(clubId, pageable);
+        Page<Member> page = memberRepository.findByClubIdActive(clubId, pageable);
         List<MemberResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -98,7 +101,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<MemberResponse> searchMembers(String searchTerm, Pageable pageable) {
-        Page<Member> page = memberRepository.findByLastNameContainingIgnoreCase(searchTerm, pageable);
+        Page<Member> page = memberRepository.findByLastNameContainingIgnoreCaseActive(searchTerm, pageable);
         List<MemberResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -108,7 +111,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<MemberResponse> getMembersByStatus(MembershipStatus status, Pageable pageable) {
-        Page<Member> page = memberRepository.findByStatus(status, pageable);
+        Page<Member> page = memberRepository.findByStatusActive(status, pageable);
         List<MemberResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -118,7 +121,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public PagedResponse<MemberResponse> getMembersByType(MembershipType type, Pageable pageable) {
-        Page<Member> page = memberRepository.findByMembershipType(type, pageable);
+        Page<Member> page = memberRepository.findByMembershipTypeActive(type, pageable);
         List<MemberResponse> content = page.getContent().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -126,15 +129,23 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<MemberResponse> getDeletedMembers() {
+        return memberRepository.findAllDeleted().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public MemberResponse updateMember(Long id, MemberRequest request) {
-        Member member = memberRepository.findById(id)
+        Member member = memberRepository.findByIdActive(id)
                 .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
 
         if (!member.getEmail().equals(request.getEmail()) && memberRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email bereits vorhanden: " + request.getEmail());
         }
 
-        Club club = clubRepository.findById(request.getClubId())
+        Club club = clubRepository.findByIdActive(request.getClubId())
                 .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + request.getClubId()));
 
         member.setFirstName(request.getFirstName());
@@ -147,17 +158,31 @@ public class MemberServiceImpl implements MemberService {
         member.setMembershipType(request.getMembershipType());
         member.setStatus(request.getStatus());
         member.setClub(club);
+        member.setUpdatedAt(LocalDateTime.now());
 
         member = memberRepository.save(member);
         return mapToResponse(member);
     }
 
     @Override
-    public void deleteMember(Long id) {
-        if (!memberRepository.existsById(id)) {
-            throw new RuntimeException("Mitglied nicht gefunden: " + id);
+    public void deleteMember(Long id, String deletedBy) {
+        Member member = memberRepository.findByIdActive(id)
+                .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
+        member.softDelete(deletedBy);
+        memberRepository.save(member);
+    }
+
+    @Override
+    public MemberResponse restoreMember(Long id) {
+        Member member = memberRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
+        if (!member.isDeleted()) {
+            throw new RuntimeException("Mitglied ist nicht gelöscht: " + id);
         }
-        memberRepository.deleteById(id);
+        member.restore();
+        member.setUpdatedAt(LocalDateTime.now());
+        member = memberRepository.save(member);
+        return mapToResponse(member);
     }
 
     private MemberResponse mapToResponse(Member member) {
