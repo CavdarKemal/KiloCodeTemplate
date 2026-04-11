@@ -55,6 +55,10 @@ Das Projekt "Verein Verwaltung" ist eine Spring Boot-Anwendung zur Verwaltung vo
 | **Fehlerbehandlung** | Zentrale Exception-Handling |
 | **REST API** | Vollständige RESTful Schnittstelle |
 | **Tests** | Unit, Integration und E2E Tests |
+| **JWT Auth** | Token-basierte Authentifizierung mit Refresh Tokens |
+| **Rate Limiting** | 100 Requests/Minute pro Client |
+| **Monitoring** | Prometheus Metriken und Health Checks |
+| **Docker** | Multi-stage Build Optimierung |
 
 ### Projekt-Statistiken
 
@@ -615,6 +619,14 @@ CREATE INDEX idx_member_status ON member(status);
 
 ### Detailierte Endpunkte
 
+#### Auth API
+
+| Methode | Pfad | Status | Beschreibung |
+|---------|------|--------|--------------|
+| POST | `/api/auth/register` | 201 | Neuen Benutzer registrieren |
+| POST | `/api/auth/login` | 200 | Benutzer anmelden |
+| POST | `/api/auth/refresh` | 200 | Token erneuern |
+
 #### Clubs API
 
 | Methode | Pfad | Status | Beschreibung |
@@ -870,6 +882,46 @@ mvn clean package -DskipTests
 mvn spring-boot:run
 ```
 
+### CI/CD Pipeline
+
+Das Projekt enthält eine GitHub Actions Pipeline unter `.github/workflows/build.yml`:
+
+```yaml
+# Automatischer Build bei Push auf main/develop
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+      - name: Build with Maven
+        run: mvn clean compile -DskipTests
+      - name: Run Tests
+        run: mvn test
+      - name: Build JAR
+        run: mvn package -DskipTests
+      - name: Build Docker Image
+        run: docker build -t kilocode-app:${{ github.sha }} .
+```
+
+### Monitoring Endpoints
+
+| Endpoint | Beschreibung |
+|----------|---------------|
+| `/actuator/health` | Health Check |
+| `/actuator/metrics` | Metriken |
+| `/actuator/prometheus` | Prometheus Format |
+| `/swagger-ui.html` | API Dokumentation |
+
 ### Docker Deployment
 
 #### docker-compose.yml
@@ -1091,10 +1143,12 @@ Dieses Tutorial hat die wichtigsten Aspekte einer Spring Boot 4.0.5 Anwendung ge
 
 ### Nächste Schritte
 
-1. **Security hinzufügen** - Spring Security für Authentifizierung
-2. **E2E Tests erweitern** - Mehr Testcontainers Szenarien
-3. **API Dokumentation** - OpenAPI/Swagger integrieren
-4. **CI/CD Pipeline** - GitHub Actions konfigurieren
+1. ~~Security hinzufügen~~ ✓ (bereits implementiert)
+2. ~~CI/CD Pipeline~~ ✓ (GitHub Actions konfiguriert)
+3. ~~Monitoring hinzufügen~~ ✓ (Prometheus + Actuator)
+4. **Unit Tests erweitern** - Mehr Coverage
+5. **CSV Import** - Mitglieder per CSV importieren
+6. **PDF Export** - Listen als PDF exportieren
 
 ### Ressourcen
 
