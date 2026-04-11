@@ -26,6 +26,8 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 - **Mitgliederverwaltung**: Vollständige CRUD-Operationen für Vereinsmitglieder
 - **Membership-Typen**: Unterstützung für verschiedene Mitgliedschaftstypen (REGULAR, FAMILY, STUDENT, SENIOR, HONORARY)
 - **Membership-Status**: Verwaltung von Mitgliedschaftsstatus (ACTIVE, INACTIVE, SUSPENDED, CANCELLED)
+- **JWT-Authentifizierung**: Sichere REST-API mit Bearer Token Authentifizierung
+- **Rollenbasierte Zugriffskontrolle**: @PreAuthorize für ADMIN und USER Rollen
 - **Validierung**: Automatische Validierung von Eingabedaten
 - **Fehlerbehandlung**: Zentrale Ausnahmebehandlung mit aussagekräftigen Fehlermeldungen
 
@@ -118,37 +120,79 @@ verein-verwaltung/
 - `SUSPENDED`: Gesperrtes Mitglied
 - `CANCELLED`: Abgebrochene Mitgliedschaft
 
+#### User (Benutzer)
+- `id`: Eindeutige Identifikationsnummer
+- `username`: Benutzername (Pflichtfeld, eindeutig)
+- `password`: Passwort (BCrypt verschlüsselt)
+- `role`: Rolle (USER oder ADMIN)
+- `enabled`: Aktiviert/Deaktiviert
+- `createdAt`: Erstellungszeitpunkt
+
 ---
 
 ## API Endpunkte
 
+### Authentifizierung (Auth)
+
+| Methode | Endpunkt | Beschreibung | Rolle |
+|---------|----------|---------------|-------|
+| POST | `/api/auth/register` | Benutzer registrieren | PUBLIC |
+| POST | `/api/auth/login` | Benutzer anmelden | PUBLIC |
+
 ### Vereine (Clubs)
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|---------------|
-| POST | `/api/clubs` | Neuen Verein erstellen |
-| GET | `/api/clubs` | Alle Vereine abrufen |
-| GET | `/api/clubs/{id}` | Verein nach ID abrufen |
-| PUT | `/api/clubs/{id}` | Verein aktualisieren |
-| DELETE | `/api/clubs/{id}` | Verein löschen |
+| Methode | Endpunkt | Beschreibung | Rolle |
+|---------|----------|---------------|-------|
+| POST | `/api/clubs` | Neuen Verein erstellen | ADMIN |
+| GET | `/api/clubs` | Alle Vereine abrufen | USER/ADMIN |
+| GET | `/api/clubs/{id}` | Verein nach ID abrufen | USER/ADMIN |
+| PUT | `/api/clubs/{id}` | Verein aktualisieren | ADMIN |
+| DELETE | `/api/clubs/{id}` | Verein löschen | ADMIN |
 
 ### Mitglieder (Members)
 
-| Methode | Endpunkt | Beschreibung |
-|---------|----------|---------------|
-| POST | `/api/members` | Neues Mitglied erstellen |
-| GET | `/api/members` | Alle Mitglieder abrufen |
-| GET | `/api/members/{id}` | Mitglied nach ID abrufen |
-| GET | `/api/members/club/{clubId}` | Mitglieder nach Verein |
-| PUT | `/api/members/{id}` | Mitglied aktualisieren |
-| DELETE | `/api/members/{id}` | Mitglied löschen |
+| Methode | Endpunkt | Beschreibung | Rolle |
+|---------|----------|---------------|-------|
+| POST | `/api/members` | Neues Mitglied erstellen | ADMIN |
+| GET | `/api/members` | Alle Mitglieder abrufen | USER/ADMIN |
+| GET | `/api/members/{id}` | Mitglied nach ID abrufen | USER/ADMIN |
+| GET | `/api/members/club/{clubId}` | Mitglieder nach Verein | USER/ADMIN |
+| PUT | `/api/members/{id}` | Mitglied aktualisieren | ADMIN |
+| DELETE | `/api/members/{id}` | Mitglied löschen | ADMIN |
 
 ### Beispiele
 
-#### Verein erstellen
+#### Benutzer registrieren
 ```bash
+curl -X POST http://localhost:8081/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "password123"
+  }'
+```
+
+#### Benutzer anmelden
+```bash
+curl -X POST http://localhost:8081/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "admin",
+    "password": "password123"
+  }'
+```
+
+#### Verein erstellen (mit Token)
+```bash
+# Zuerst einloggen um Token zu erhalten
+TOKEN=$(curl -s -X POST http://localhost:8081/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"password123"}' | jq -r '.token')
+
+# Dann mit Token aufrufen
 curl -X POST http://localhost:8081/api/clubs \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "name": "FC Beispiel",
     "description": "Ein Beispielverein",
@@ -156,10 +200,17 @@ curl -X POST http://localhost:8081/api/clubs \
   }'
 ```
 
+#### Alle Vereine abrufen (mit Token)
+```bash
+curl http://localhost:8081/api/clubs \
+  -H "Authorization: Bearer $TOKEN"
+```
+
 #### Mitglied erstellen
 ```bash
 curl -X POST http://localhost:8081/api/members \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
   -d '{
     "firstName": "Max",
     "lastName": "Mustermann",

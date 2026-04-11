@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class ClubController {
     private final ClubService clubService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ClubResponse> createClub(@Valid @RequestBody ClubRequest request) {
         return new ResponseEntity<>(clubService.createClub(request), HttpStatus.CREATED);
     }
@@ -33,11 +35,13 @@ public class ClubController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<ClubResponse> updateClub(@PathVariable Long id, @Valid @RequestBody ClubRequest request) {
         return ResponseEntity.ok(clubService.updateClub(id, request));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<Void> deleteClub(@PathVariable Long id) {
         clubService.deleteClub(id);
         return ResponseEntity.noContent().build();
