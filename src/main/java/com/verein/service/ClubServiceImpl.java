@@ -4,6 +4,8 @@ import com.verein.dto.ClubRequest;
 import com.verein.dto.ClubResponse;
 import com.verein.dto.PagedResponse;
 import com.verein.entity.Club;
+import com.verein.exception.DuplicateResourceException;
+import com.verein.exception.ResourceNotFoundException;
 import com.verein.repository.ClubRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,10 @@ public class ClubServiceImpl implements ClubService {
 
     @Override
     public ClubResponse createClub(ClubRequest request) {
+        if (clubRepository.existsByName(request.getName())) {
+            throw new DuplicateResourceException("Club", "name", request.getName());
+        }
+        
         Club club = Club.builder()
                 .name(request.getName())
                 .description(request.getDescription())
@@ -42,7 +48,7 @@ public class ClubServiceImpl implements ClubService {
     @Transactional(readOnly = true)
     public ClubResponse getClubById(Long id) {
         Club club = clubRepository.findByIdActive(id)
-                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Club", id));
         return mapToResponse(club);
     }
 
@@ -85,7 +91,7 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public ClubResponse updateClub(Long id, ClubRequest request) {
         Club club = clubRepository.findByIdActive(id)
-                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Club", id));
         
         try {
             String oldValue = objectMapper.writeValueAsString(mapToResponse(club));
@@ -106,7 +112,7 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public void deleteClub(Long id, String deletedBy) {
         Club club = clubRepository.findByIdActive(id)
-                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Club", id));
         club.softDelete(deletedBy);
         clubRepository.save(club);
         auditService.logDelete("Club", id, club.getName(), deletedBy);
@@ -115,9 +121,9 @@ public class ClubServiceImpl implements ClubService {
     @Override
     public ClubResponse restoreClub(Long id) {
         Club club = clubRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Club", id));
         if (!club.isDeleted()) {
-            throw new RuntimeException("Club ist nicht gelöscht: " + id);
+            throw new IllegalArgumentException("Club ist nicht gelöscht: " + id);
         }
         club.restore();
         club.setUpdatedAt(LocalDateTime.now());

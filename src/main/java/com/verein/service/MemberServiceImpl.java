@@ -7,6 +7,8 @@ import com.verein.entity.Club;
 import com.verein.entity.Member;
 import com.verein.entity.MembershipStatus;
 import com.verein.entity.MembershipType;
+import com.verein.exception.DuplicateResourceException;
+import com.verein.exception.ResourceNotFoundException;
 import com.verein.repository.ClubRepository;
 import com.verein.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +31,11 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponse createMember(MemberRequest request) {
         if (memberRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email bereits vorhanden: " + request.getEmail());
+            throw new DuplicateResourceException("Member", "email", request.getEmail());
         }
         
         Club club = clubRepository.findByIdActive(request.getClubId())
-                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + request.getClubId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Club", request.getClubId()));
 
         Member member = Member.builder()
                 .firstName(request.getFirstName())
@@ -58,7 +60,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberResponse getMemberById(Long id) {
         Member member = memberRepository.findByIdActive(id)
-                .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Member", id));
         return mapToResponse(member);
     }
 
@@ -139,14 +141,14 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponse updateMember(Long id, MemberRequest request) {
         Member member = memberRepository.findByIdActive(id)
-                .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Member", id));
 
         if (!member.getEmail().equals(request.getEmail()) && memberRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email bereits vorhanden: " + request.getEmail());
+            throw new DuplicateResourceException("Member", "email", request.getEmail());
         }
 
         Club club = clubRepository.findByIdActive(request.getClubId())
-                .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + request.getClubId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Club", request.getClubId()));
 
         member.setFirstName(request.getFirstName());
         member.setLastName(request.getLastName());
@@ -175,9 +177,9 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponse restoreMember(Long id) {
         Member member = memberRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Mitglied nicht gefunden: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Member", id));
         if (!member.isDeleted()) {
-            throw new RuntimeException("Mitglied ist nicht gelöscht: " + id);
+            throw new IllegalArgumentException("Mitglied ist nicht gelöscht: " + id);
         }
         member.restore();
         member.setUpdatedAt(LocalDateTime.now());

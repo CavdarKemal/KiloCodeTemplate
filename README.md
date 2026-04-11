@@ -33,6 +33,7 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 - **Soft Delete**: Gelöschte Daten können wiederhergestellt werden
 - **Audit Logging**: Vollständige Protokollierung aller Aktionen
 - **OpenAPI/Swagger**: Automatisch generierte API-Dokumentation
+- **Exception Handling**: Zentrale Fehlerbehandlung mit aussagekräftigen Meldungen
 - **Validierung**: Automatische Validierung von Eingabedaten
 - **Fehlerbehandlung**: Zentrale Ausnahmebehandlung mit aussagekräftigen Fehlermeldungen
 
