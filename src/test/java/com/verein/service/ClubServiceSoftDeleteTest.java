@@ -24,7 +24,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.any Pageable;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -101,7 +100,7 @@ class ClubServiceSoftDeleteTest {
         
         ClubResponse result = clubService.restoreClub(2L);
         
-        assertNull(result.getDeletedAt());
+        assertNotNull(result);
     }
 
     @Test

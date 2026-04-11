@@ -2,6 +2,7 @@ package com.verein.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,9 +11,14 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "app_user")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
+    public enum Role {
+        USER, ADMIN
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,7 +31,12 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role;
+    private Role role;
+
+    private String email;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Column(nullable = false)
     private boolean enabled = true;

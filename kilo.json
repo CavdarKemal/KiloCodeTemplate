@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": {
+      "bash": true,
+      "read": true,
+      "write": true,
+      "edit": true,
+      "glob": true,
+      "grep": true,
+      "webfetch": true,
+      "websearch": true,
+      "codesearch": true
+    },
+    "deny": []
+  }
+}

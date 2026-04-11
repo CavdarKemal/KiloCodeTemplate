@@ -160,7 +160,7 @@ class MemberServiceImplTest {
         when(memberRepository.existsById(1L)).thenReturn(true);
         doNothing().when(memberRepository).deleteById(1L);
 
-        memberService.deleteMember(1L);
+        memberService.deleteMember(1L, "testuser");
 
         verify(memberRepository, times(1)).deleteById(1L);
     }
@@ -169,6 +169,6 @@ class MemberServiceImplTest {
     void deleteMember_NotFound() {
         when(memberRepository.existsById(1L)).thenReturn(false);
 
-        assertThrows(RuntimeException.class, () -> memberService.deleteMember(1L));
+        assertThrows(RuntimeException.class, () -> memberService.deleteMember(1L, "testuser"));
     }
 }

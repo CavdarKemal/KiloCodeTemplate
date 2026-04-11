@@ -21,11 +21,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.any Pageable;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ClubServiceImplTest {
+class ClubServicePaginationTest {
 
     @Mock
     private ClubRepository clubRepository;
@@ -75,7 +75,7 @@ class ClubServiceImplTest {
         List<Club> clubs = Arrays.asList(club1);
         Page<Club> clubPage = new PageImpl<>(clubs, PageRequest.of(0, 10), clubs.size());
         
-        when(clubRepository.findByNameContainingIgnoreCase(any String, any(Pageable.class)))
+        when(clubRepository.findByNameContainingIgnoreCase(anyString(), any(Pageable.class)))
             .thenReturn(clubPage);
         
         PagedResponse<ClubResponse> result = clubService.searchClubs("Berlin", PageRequest.of(0, 10));
@@ -89,7 +89,7 @@ class ClubServiceImplTest {
     void testSearchClubsNoResults() {
         Page<Club> emptyPage = new PageImpl<>(List.of(), PageRequest.of(0, 10), 0);
         
-        when(clubRepository.findByNameContainingIgnoreCase(any String, any(Pageable.class)))
+        when(clubRepository.findByNameContainingIgnoreCase(anyString(), any(Pageable.class)))
             .thenReturn(emptyPage);
         
         PagedResponse<ClubResponse> result = clubService.searchClubs("NotFound", PageRequest.of(0, 10));

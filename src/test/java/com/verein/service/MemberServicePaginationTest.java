@@ -27,7 +27,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.any Pageable;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,7 +107,7 @@ class MemberServicePaginationTest {
         List<Member> members = Arrays.asList(member1);
         Page<Member> memberPage = new PageImpl<>(members, PageRequest.of(0, 10), members.size());
 
-        when(memberRepository.findByLastNameContainingIgnoreCase(any String, any(Pageable.class)))
+        when(memberRepository.findByLastNameContainingIgnoreCase(anyString(), any(Pageable.class)))
             .thenReturn(memberPage);
 
         PagedResponse<MemberResponse> result = memberService.searchMembers("Muster", PageRequest.of(0, 10));

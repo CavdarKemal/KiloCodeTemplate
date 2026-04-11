@@ -120,7 +120,7 @@ class ClubServiceImplTest {
         when(clubRepository.existsById(1L)).thenReturn(true);
         doNothing().when(clubRepository).deleteById(1L);
 
-        clubService.deleteClub(1L);
+        clubService.deleteClub(1L, "testuser");
 
         verify(clubRepository, times(1)).deleteById(1L);
     }
@@ -129,6 +129,6 @@ class ClubServiceImplTest {
     void deleteClub_NotFound() {
         when(clubRepository.existsById(1L)).thenReturn(false);
 
-        assertThrows(RuntimeException.class, () -> clubService.deleteClub(1L));
+        assertThrows(RuntimeException.class, () -> clubService.deleteClub(1L, "testuser"));
     }
 }

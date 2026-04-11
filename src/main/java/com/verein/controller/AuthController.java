@@ -46,14 +46,14 @@ public class AuthController {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole("USER");
+        user.setRole(User.Role.USER);
         user.setEnabled(true);
         user.setCreatedAt(LocalDateTime.now());
         
         userRepository.save(user);
         
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        AuthResponse response = new AuthResponse(token, user.getUsername(), user.getRole(), jwtUtil.getExpiration());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        AuthResponse response = new AuthResponse(token, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -71,8 +71,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
-        AuthResponse response = new AuthResponse(token, user.getUsername(), user.getRole(), jwtUtil.getExpiration());
+        String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        AuthResponse response = new AuthResponse(token, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
         
         return ResponseEntity.ok(response);
     }
