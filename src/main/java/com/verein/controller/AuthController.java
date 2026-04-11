@@ -5,6 +5,11 @@ import com.verein.dto.AuthResponse;
 import com.verein.entity.User;
 import com.verein.repository.UserRepository;
 import com.verein.security.JwtUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +20,7 @@ import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "Authentifizierung Endpoints für Registrierung und Login")
 public class AuthController {
 
     private final UserRepository userRepository;
@@ -28,6 +34,10 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Benutzer registrieren", description = "Registriert einen neuen Benutzer und gibt ein JWT Token zurück")
+    @ApiResponse(responseCode = "201", description = "Benutzer erfolgreich registriert", 
+        content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Benutzername bereits vergeben")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             return ResponseEntity.badRequest().build();
@@ -49,6 +59,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Benutzer anmelden", description = "Authentifiziert einen Benutzer und gibt ein JWT Token zurück")
+    @ApiResponse(responseCode = "200", description = "Erfolgreich angemeldet", 
+        content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Ungültige Anmeldedaten")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElse(null);

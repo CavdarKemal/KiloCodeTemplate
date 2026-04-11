@@ -32,6 +32,7 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 - **CORS Support**: Unterstützung für React, Angular, Vue.js Frontends
 - **Soft Delete**: Gelöschte Daten können wiederhergestellt werden
 - **Audit Logging**: Vollständige Protokollierung aller Aktionen
+- **OpenAPI/Swagger**: Automatisch generierte API-Dokumentation
 - **Validierung**: Automatische Validierung von Eingabedaten
 - **Fehlerbehandlung**: Zentrale Ausnahmebehandlung mit aussagekräftigen Fehlermeldungen
 
@@ -184,6 +185,14 @@ verein-verwaltung/
 | GET | `/api/audit/type/{entityName}` | Entity-Typ Verlauf abrufen | ADMIN |
 | GET | `/api/audit/all` | Alle Audit-Logs abrufen | ADMIN |
 | GET | `/api/audit/action?entityName=&action=` | Audit-Logs nach Aktion | ADMIN |
+
+### OpenAPI / Swagger
+
+| URL | Beschreibung |
+|-----|---------------|
+| `/swagger-ui.html` | Swagger UI (Web-Interface) |
+| `/v3/api-docs` | OpenAPI 3.0 JSON |
+| `/v3/api-docs.yaml` | OpenAPI 3.0 YAML |
 
 ### Beispiele
 

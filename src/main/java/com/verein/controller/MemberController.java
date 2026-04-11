@@ -6,6 +6,12 @@ import com.verein.dto.PagedResponse;
 import com.verein.entity.MembershipStatus;
 import com.verein.entity.MembershipType;
 import com.verein.service.MemberService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,12 +27,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/members")
 @RequiredArgsConstructor
+@Tag(name = "Members", description = "Mitgliederverwaltung Endpoints")
 public class MemberController {
 
     private final MemberService memberService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN')")
+    @Operation(summary = "Mitglied erstellen", description = "Erstellt ein neues Mitglied (nur ADMIN)")
+    @ApiResponse(responseCode = "201", description = "Mitglied erfolgreich erstellt", 
+        content = @Content(schema = @Schema(implementation = MemberResponse.class)))
     public ResponseEntity<MemberResponse> createMember(@Valid @RequestBody MemberRequest request) {
         return new ResponseEntity<>(memberService.createMember(request), HttpStatus.CREATED);
     }

@@ -15,6 +15,15 @@ spring:
   mvc:
     cors:
       enabled: true
+  doc:
+    swagger-ui:
+      enabled: true
+      path: /swagger-ui.html
+      tags-sorter: alpha
+      operations-sorter: alpha
+    api-docs:
+      enabled: true
+      path: /v3/api-docs
 
 server:
   port: 8080
