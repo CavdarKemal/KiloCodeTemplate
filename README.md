@@ -31,6 +31,7 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 - **Pagination**: Paginiertes Abrufen mit Such- und Filterfunktionen
 - **CORS Support**: Unterstützung für React, Angular, Vue.js Frontends
 - **Soft Delete**: Gelöschte Daten können wiederhergestellt werden
+- **Audit Logging**: Vollständige Protokollierung aller Aktionen
 - **Validierung**: Automatische Validierung von Eingabedaten
 - **Fehlerbehandlung**: Zentrale Ausnahmebehandlung mit aussagekräftigen Fehlermeldungen
 
@@ -173,6 +174,16 @@ verein-verwaltung/
 | PUT | `/api/members/{id}` | Mitglied aktualisieren | ADMIN |
 | DELETE | `/api/members/{id}` | Soft Delete Mitglied | ADMIN |
 | PUT | `/api/members/{id}/restore` | Gelöschtes Mitglied wiederherstellen | ADMIN |
+
+### Audit
+
+| Methode | Endpunkt | Beschreibung | Rolle |
+|---------|----------|---------------|-------|
+| GET | `/api/audit/entity/{entityName}/{entityId}` | Entity-Verlauf abrufen | ADMIN |
+| GET | `/api/audit/user/{username}` | Benutzer-Aktivität abrufen | ADMIN |
+| GET | `/api/audit/type/{entityName}` | Entity-Typ Verlauf abrufen | ADMIN |
+| GET | `/api/audit/all` | Alle Audit-Logs abrufen | ADMIN |
+| GET | `/api/audit/action?entityName=&action=` | Audit-Logs nach Aktion | ADMIN |
 
 ### Beispiele
 

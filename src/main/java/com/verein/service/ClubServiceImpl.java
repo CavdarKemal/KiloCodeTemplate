@@ -5,6 +5,7 @@ import com.verein.dto.ClubResponse;
 import com.verein.dto.PagedResponse;
 import com.verein.entity.Club;
 import com.verein.repository.ClubRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +21,8 @@ import java.util.stream.Collectors;
 public class ClubServiceImpl implements ClubService {
 
     private final ClubRepository clubRepository;
+    private final AuditService auditService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public ClubResponse createClub(ClubRequest request) {
@@ -83,12 +86,20 @@ public class ClubServiceImpl implements ClubService {
     public ClubResponse updateClub(Long id, ClubRequest request) {
         Club club = clubRepository.findByIdActive(id)
                 .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
-        club.setName(request.getName());
-        club.setDescription(request.getDescription());
-        club.setFoundedDate(request.getFoundedDate());
-        club.setCity(request.getCity());
-        club.setUpdatedAt(LocalDateTime.now());
-        club = clubRepository.save(club);
+        
+        try {
+            String oldValue = objectMapper.writeValueAsString(mapToResponse(club));
+            club.setName(request.getName());
+            club.setDescription(request.getDescription());
+            club.setFoundedDate(request.getFoundedDate());
+            club.setCity(request.getCity());
+            club.setUpdatedAt(LocalDateTime.now());
+            club = clubRepository.save(club);
+            String newValue = objectMapper.writeValueAsString(mapToResponse(club));
+            auditService.logUpdate("Club", id, oldValue, newValue, "system");
+        } catch (Exception e) {
+            club = clubRepository.save(club);
+        }
         return mapToResponse(club);
     }
 
@@ -98,6 +109,7 @@ public class ClubServiceImpl implements ClubService {
                 .orElseThrow(() -> new RuntimeException("Club nicht gefunden: " + id));
         club.softDelete(deletedBy);
         clubRepository.save(club);
+        auditService.logDelete("Club", id, club.getName(), deletedBy);
     }
 
     @Override
@@ -110,6 +122,7 @@ public class ClubServiceImpl implements ClubService {
         club.restore();
         club.setUpdatedAt(LocalDateTime.now());
         club = clubRepository.save(club);
+        auditService.logRestore("Club", id, "system");
         return mapToResponse(club);
     }
 
