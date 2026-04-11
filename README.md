@@ -146,6 +146,8 @@ verein-verwaltung/
 | POST | `/api/clubs` | Neuen Verein erstellen | ADMIN |
 | GET | `/api/clubs` | Alle Vereine abrufen | USER/ADMIN |
 | GET | `/api/clubs/{id}` | Verein nach ID abrufen | USER/ADMIN |
+| GET | `/api/clubs/paginated` | Vereine paginiert abrufen | USER/ADMIN |
+| GET | `/api/clubs/search?search=` | Vereine suchen | USER/ADMIN |
 | PUT | `/api/clubs/{id}` | Verein aktualisieren | ADMIN |
 | DELETE | `/api/clubs/{id}` | Verein löschen | ADMIN |
 
@@ -156,7 +158,12 @@ verein-verwaltung/
 | POST | `/api/members` | Neues Mitglied erstellen | ADMIN |
 | GET | `/api/members` | Alle Mitglieder abrufen | USER/ADMIN |
 | GET | `/api/members/{id}` | Mitglied nach ID abrufen | USER/ADMIN |
+| GET | `/api/members/paginated` | Mitglieder paginiert abrufen | USER/ADMIN |
 | GET | `/api/members/club/{clubId}` | Mitglieder nach Verein | USER/ADMIN |
+| GET | `/api/members/club/{clubId}/paginated` | Mitglieder nach Verein paginiert | USER/ADMIN |
+| GET | `/api/members/search?search=` | Mitglieder suchen | USER/ADMIN |
+| GET | `/api/members/status/{status}` | Mitglieder nach Status | USER/ADMIN |
+| GET | `/api/members/type/{type}` | Mitglieder nach Typ | USER/ADMIN |
 | PUT | `/api/members/{id}` | Mitglied aktualisieren | ADMIN |
 | DELETE | `/api/members/{id}` | Mitglied löschen | ADMIN |
 
@@ -224,7 +231,32 @@ curl -X POST http://localhost:8081/api/members \
 
 #### Alle Vereine abrufen
 ```bash
-curl http://localhost:8081/api/clubs
+curl http://localhost:8081/api/clubs \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Paginiert abrufen
+```bash
+curl "http://localhost:8081/api/clubs/paginated?page=0&size=10&sortBy=name&sortDir=asc" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Nach Namen suchen
+```bash
+curl "http://localhost:8081/api/clubs/search?search=Berlin&page=0&size=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Mitglieder paginiert abrufen
+```bash
+curl "http://localhost:8081/api/members/paginated?page=0&size=10" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+#### Mitglieder nach Status filtern
+```bash
+curl "http://localhost:8081/api/members/status/ACTIVE?page=0&size=10" \
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 ---

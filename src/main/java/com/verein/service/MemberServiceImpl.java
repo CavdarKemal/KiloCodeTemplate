@@ -2,12 +2,16 @@ package com.verein.service;
 
 import com.verein.dto.MemberRequest;
 import com.verein.dto.MemberResponse;
+import com.verein.dto.PagedResponse;
 import com.verein.entity.Club;
 import com.verein.entity.Member;
 import com.verein.entity.MembershipStatus;
+import com.verein.entity.MembershipType;
 import com.verein.repository.ClubRepository;
 import com.verein.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -69,6 +73,56 @@ public class MemberServiceImpl implements MemberService {
         return memberRepository.findByClubId(clubId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<MemberResponse> getMembersPaginated(Pageable pageable) {
+        Page<Member> page = memberRepository.findAll(pageable);
+        List<MemberResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<MemberResponse> getMembersByClubPaginated(Long clubId, Pageable pageable) {
+        Page<Member> page = memberRepository.findByClubId(clubId, pageable);
+        List<MemberResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<MemberResponse> searchMembers(String searchTerm, Pageable pageable) {
+        Page<Member> page = memberRepository.findByLastNameContainingIgnoreCase(searchTerm, pageable);
+        List<MemberResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<MemberResponse> getMembersByStatus(MembershipStatus status, Pageable pageable) {
+        Page<Member> page = memberRepository.findByStatus(status, pageable);
+        List<MemberResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<MemberResponse> getMembersByType(MembershipType type, Pageable pageable) {
+        Page<Member> page = memberRepository.findByMembershipType(type, pageable);
+        List<MemberResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
     }
 
     @Override

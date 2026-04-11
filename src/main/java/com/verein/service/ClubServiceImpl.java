@@ -2,9 +2,12 @@ package com.verein.service;
 
 import com.verein.dto.ClubRequest;
 import com.verein.dto.ClubResponse;
+import com.verein.dto.PagedResponse;
 import com.verein.entity.Club;
 import com.verein.repository.ClubRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -43,6 +46,26 @@ public class ClubServiceImpl implements ClubService {
         return clubRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<ClubResponse> getClubsPaginated(Pageable pageable) {
+        Page<Club> page = clubRepository.findAll(pageable);
+        List<ClubResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PagedResponse<ClubResponse> searchClubs(String searchTerm, Pageable pageable) {
+        Page<Club> page = clubRepository.findByNameContainingIgnoreCase(searchTerm, pageable);
+        List<ClubResponse> content = page.getContent().stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return PagedResponse.of(content, page);
     }
 
     @Override
