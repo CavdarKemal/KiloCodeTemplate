@@ -28,6 +28,8 @@ Dieses Template dient als Grundlage für die Entwicklung einer Vereinsverwaltung
 - **Membership-Status**: Verwaltung von Mitgliedschaftsstatus (ACTIVE, INACTIVE, SUSPENDED, CANCELLED)
 - **JWT-Authentifizierung**: Sichere REST-API mit Bearer Token Authentifizierung
 - **Rollenbasierte Zugriffskontrolle**: @PreAuthorize für ADMIN und USER Rollen
+- **Pagination**: Paginiertes Abrufen mit Such- und Filterfunktionen
+- **CORS Support**: Unterstützung für React, Angular, Vue.js Frontends
 - **Validierung**: Automatische Validierung von Eingabedaten
 - **Fehlerbehandlung**: Zentrale Ausnahmebehandlung mit aussagekräftigen Fehlermeldungen
 

@@ -12,6 +12,9 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+  mvc:
+    cors:
+      enabled: true
 
 server:
   port: 8080
