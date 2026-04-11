@@ -149,4 +149,14 @@ public class MemberController {
     public ResponseEntity<MemberResponse> restoreMember(@PathVariable Long id) {
         return ResponseEntity.ok(memberService.restoreMember(id));
     }
+    
+    @PostMapping("/import/csv")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    @Operation(summary = "Mitglieder aus CSV importieren", description = "Importiert mehrere Mitglieder aus einer CSV-Datei")
+    @ApiResponse(responseCode = "200", description = "Import erfolgreich")
+    @ApiResponse(responseCode = "400", description = "Ungültiges CSV-Format")
+    public ResponseEntity<MemberService.CsvImportResult> importMembersCsv(@RequestBody MemberService.CsvImportRequest request) {
+        MemberService.CsvImportResult result = memberService.importMembersFromCsv(request.csvData());
+        return ResponseEntity.ok(result);
+    }
 }

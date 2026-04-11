@@ -1,7 +1,7 @@
 package com.verein.security;
 
-import io.bucket4j.Bandwidth;
-import io.bucket4j.Bucket;
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.Bucket;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

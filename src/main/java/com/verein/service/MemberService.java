@@ -22,4 +22,8 @@ public interface MemberService {
     MemberResponse updateMember(Long id, MemberRequest request);
     void deleteMember(Long id, String deletedBy);
     MemberResponse restoreMember(Long id);
+    CsvImportResult importMembersFromCsv(String csvData);
+    
+    record CsvImportRequest(String csvData) {}
+    record CsvImportResult(int imported, int failed, List<String> errors) {}
 }

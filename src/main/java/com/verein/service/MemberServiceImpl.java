@@ -186,6 +186,63 @@ public class MemberServiceImpl implements MemberService {
         member = memberRepository.save(member);
         return mapToResponse(member);
     }
+    
+    @Override
+    public CsvImportResult importMembersFromCsv(String csvData) {
+        if (csvData == null || csvData.isBlank()) {
+            return new CsvImportResult(0, 0, List.of("CSV-Daten sind leer"));
+        }
+        
+        String[] lines = csvData.split("\n");
+        int imported = 0;
+        int failed = 0;
+        List<String> errors = new java.util.ArrayList<>();
+        
+        for (int i = 0; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty()) continue;
+            
+            if (i == 0 && line.toLowerCase().contains("firstname")) {
+                continue;
+            }
+            
+            try {
+                String[] parts = line.split(",");
+                if (parts.length < 6) {
+                    errors.add("Zeile " + (i+1) + ": Zu wenig Spalten");
+                    failed++;
+                    continue;
+                }
+                
+                MemberRequest request = new MemberRequest();
+                request.setFirstName(parts[0].trim());
+                request.setLastName(parts[1].trim());
+                request.setEmail(parts[2].trim());
+                request.setPhoneNumber(parts.length > 3 ? parts[3].trim() : null);
+                request.setGender(parts.length > 4 ? parts[4].trim() : null);
+                request.setMembershipType(MembershipType.valueOf(parts[5].trim().toUpperCase()));
+                
+                if (parts.length > 6 && !parts[6].trim().isEmpty()) {
+                    request.setClubId(Long.parseLong(parts[6].trim()));
+                }
+                
+                if (request.getClubId() == null) {
+                    errors.add("Zeile " + (i+1) + ": Keine Club-ID angegeben");
+                    failed++;
+                    continue;
+                }
+                
+                createMember(request);
+                imported++;
+                
+            } catch (Exception e) {
+                errors.add("Zeile " + (i+1) + ": " + e.getMessage());
+                failed++;
+            }
+        }
+        
+        return new CsvImportResult(imported, failed, errors);
+    }
 
     private MemberResponse mapToResponse(Member member) {
         return MemberResponse.builder()

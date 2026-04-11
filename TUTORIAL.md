@@ -59,6 +59,7 @@ Das Projekt "Verein Verwaltung" ist eine Spring Boot-Anwendung zur Verwaltung vo
 | **Rate Limiting** | 100 Requests/Minute pro Client |
 | **Monitoring** | Prometheus Metriken und Health Checks |
 | **Docker** | Multi-stage Build Optimierung |
+| **CSV Import** | Mitglieder per CSV importieren |
 
 ### Projekt-Statistiken
 
@@ -68,8 +69,8 @@ Das Projekt "Verein Verwaltung" ist eine Spring Boot-Anwendung zur Verwaltung vo
 | Spring Boot Version | 4.0.5 |
 | Maven Version | 4.0.0 |
 | Test-Klassen | 6 |
-| Test-Methoden | 40 |
-| Controller | 2 |
+| Test-Methoden | 40+ |
+| Controller | 3 |
 | Services | 4 |
 | Repositories | 4 |
 | Entities | 2 |
@@ -647,6 +648,25 @@ CREATE INDEX idx_member_status ON member(status);
 | GET | `/api/members/club/{clubId}` | 200 | Mitglieder nach Verein |
 | PUT | `/api/members/{id}` | 200 | Mitglied aktualisieren |
 | DELETE | `/api/members/{id}` | 204 | Mitglied löschen |
+| POST | `/api/members/import/csv` | 200 | Mitglieder aus CSV importieren |
+
+### CSV Import Format
+
+**Request (POST /api/members/import/csv):**
+```json
+{
+    "csvData": "FirstName,LastName,Email,Phone,Gender,MembershipType,ClubId\nMax,Mustermann,max@test.de,0123456789,M,REGULAR,1"
+}
+```
+
+**Response (200):**
+```json
+{
+    "imported": 1,
+    "failed": 0,
+    "errors": []
+}
+```
 
 ### Request/Response Beispiele
 
