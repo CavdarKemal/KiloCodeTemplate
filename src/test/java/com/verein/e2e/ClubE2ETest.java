@@ -1,37 +1,39 @@
 package com.verein.e2e;
 
-import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import java.time.LocalDate;
+
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
 
-class ClubE2ETest extends BaseE2ETest {
+@DisplayName("Club E2E Tests")
+public class ClubE2ETest extends BaseE2ETest {
 
     private static Long clubId;
 
     @BeforeEach
     void setUp() {
-        RestAssured.port = getPort();
+        String username = uniqueUsername();
+        register(username, "password123", username + "@test.com");
+        login(username, "password123");
     }
 
     @Test
+    @DisplayName("Create club - 201 Created")
     void createClub() {
-        String requestBody = "{" +
-                "\"name\": \"FC Testverein\"," +
-                "\"description\": \"Ein Testverein\"," +
-                "\"foundedDate\": \"2020-01-01\"," +
-                "\"city\": \"Berlin\"" +
-                "}";
+        String requestBody = """
+            {
+                "name": "FC Testverein",
+                "description": "Ein Testverein",
+                "foundedDate": "2020-01-01",
+                "city": "Berlin"
+            }
+            """;
 
-        Response response = given()
-                .contentType(ContentType.JSON)
-                .body(requestBody)
-                .when()
-                .post("/api/clubs")
+        Response response = postWithAuth("/api/clubs", requestBody)
                 .then()
                 .statusCode(201)
                 .body("id", notNullValue())
@@ -43,43 +45,56 @@ class ClubE2ETest extends BaseE2ETest {
     }
 
     @Test
+    @DisplayName("Get club by ID - 200 OK")
     void getClubById() {
-        createClub();
+        String createBody = """
+            {
+                "name": "Einzelner Verein",
+                "city": "Hamburg"
+            }
+            """;
 
-        given()
-                .when()
-                .get("/api/clubs/" + clubId)
+        Long id = postWithAuth("/api/clubs", createBody)
+                .jsonPath().getLong("id");
+
+        getWithAuth("/api/clubs/" + id)
                 .then()
                 .statusCode(200)
-                .body("id", equalTo(clubId.intValue()))
-                .body("name", equalTo("FC Testverein"));
+                .body("id", equalTo(id.intValue()))
+                .body("name", equalTo("Einzelner Verein"));
     }
 
     @Test
+    @DisplayName("Get all clubs - 200 OK")
     void getAllClubs() {
-        given()
-                .when()
-                .get("/api/clubs")
+        getWithAuth("/api/clubs")
                 .then()
                 .statusCode(200)
                 .body("$", hasSize(greaterThanOrEqualTo(0)));
     }
 
     @Test
+    @DisplayName("Update club - 200 OK")
     void updateClub() {
-        createClub();
+        String createBody = """
+            {
+                "name": "Vor Update",
+                "city": "Hamburg"
+            }
+            """;
 
-        String updateBody = "{" +
-                "\"name\": \"FC Testverein Updated\"," +
-                "\"description\": \"Updated Description\"," +
-                "\"city\": \"Munich\"" +
-                "}";
+        Long id = postWithAuth("/api/clubs", createBody)
+                .jsonPath().getLong("id");
 
-        given()
-                .contentType(ContentType.JSON)
-                .body(updateBody)
-                .when()
-                .put("/api/clubs/" + clubId)
+        String updateBody = """
+            {
+                "name": "FC Testverein Updated",
+                "description": "Updated Description",
+                "city": "Munich"
+            }
+            """;
+
+        putWithAuth("/api/clubs/" + id, updateBody)
                 .then()
                 .statusCode(200)
                 .body("name", equalTo("FC Testverein Updated"))
@@ -87,35 +102,72 @@ class ClubE2ETest extends BaseE2ETest {
     }
 
     @Test
+    @DisplayName("Soft delete club - 204 No Content")
     void deleteClub() {
-        createClub();
+        String createBody = """
+            {
+                "name": "Zu Loeschen",
+                "city": "Frankfurt"
+            }
+            """;
 
-        given()
-                .when()
-                .delete("/api/clubs/" + clubId)
+        Long id = postWithAuth("/api/clubs", createBody)
+                .jsonPath().getLong("id");
+
+        deleteWithAuth("/api/clubs/" + id)
                 .then()
                 .statusCode(204);
+    }
 
-        given()
-                .when()
-                .get("/api/clubs/" + clubId)
+    @Test
+    @DisplayName("Create club validation error - 400 Bad Request")
+    void createClub_ValidationError() {
+        String requestBody = """
+            {
+                "name": "",
+                "description": "Test"
+            }
+            """;
+
+        postWithAuth("/api/clubs", requestBody)
                 .then()
                 .statusCode(400);
     }
 
     @Test
-    void createClub_ValidationError() {
-        String requestBody = "{" +
-                "\"name\": \"\"," +
-                "\"description\": \"Test\"" +
-                "}";
-
+    @DisplayName("Get club unauthorized - 401 Unauthorized")
+    void getClubUnauthorized() {
         given()
-                .contentType(ContentType.JSON)
-                .body(requestBody)
                 .when()
-                .post("/api/clubs")
+                .get(getBaseUrl() + "/api/clubs")
                 .then()
-                .statusCode(400);
+                .statusCode(401);
+    }
+
+    @Test
+    @DisplayName("Search clubs - 200 OK")
+    void searchClubs() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .queryParam("search", "Test")
+                .when()
+                .get(getBaseUrl() + "/api/clubs")
+                .then()
+                .statusCode(200);
+    }
+
+    @Test
+    @DisplayName("Pagination clubs - 200 OK")
+    void paginationClubs() {
+        given()
+                .header("Authorization", "Bearer " + token)
+                .queryParam("page", 0)
+                .queryParam("size", 10)
+                .when()
+                .get(getBaseUrl() + "/api/clubs")
+                .then()
+                .statusCode(200)
+                .body("content", is(notNullValue()))
+                .body("totalElements", is(notNullValue()));
     }
 }

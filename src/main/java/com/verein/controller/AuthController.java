@@ -2,6 +2,7 @@ package com.verein.controller;
 
 import com.verein.dto.AuthRequest;
 import com.verein.dto.AuthResponse;
+import com.verein.dto.RefreshTokenRequest;
 import com.verein.entity.User;
 import com.verein.repository.UserRepository;
 import com.verein.security.JwtUtil;
@@ -53,7 +54,8 @@ public class AuthController {
         userRepository.save(user);
         
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        AuthResponse response = new AuthResponse(token, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+        AuthResponse response = new AuthResponse(token, refreshToken, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
         
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -72,7 +74,34 @@ public class AuthController {
         }
 
         String token = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
-        AuthResponse response = new AuthResponse(token, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
+        String refreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+        AuthResponse response = new AuthResponse(token, refreshToken, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PostMapping("/refresh")
+    @Operation(summary = "Token erneuern", description = "Erneuert den Access Token mit einem Refresh Token")
+    @ApiResponse(responseCode = "200", description = "Token erfolgreich erneuert", 
+        content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    @ApiResponse(responseCode = "401", description = "Ungültiger Refresh Token")
+    public ResponseEntity<AuthResponse> refresh(@RequestBody RefreshTokenRequest request) {
+        String refreshToken = request.getRefreshToken();
+        
+        if (!jwtUtil.validateToken(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String username = jwtUtil.extractUsername(refreshToken);
+        User user = userRepository.findByUsername(username).orElse(null);
+        
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        String newToken = jwtUtil.generateToken(user.getUsername(), user.getRole().name());
+        String newRefreshToken = jwtUtil.generateRefreshToken(user.getUsername());
+        AuthResponse response = new AuthResponse(newToken, newRefreshToken, user.getUsername(), user.getRole().name(), jwtUtil.getExpiration());
         
         return ResponseEntity.ok(response);
     }

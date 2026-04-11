@@ -28,9 +28,23 @@ spring:
 server:
   port: 8080
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 jwt:
   secret: verein-verwaltung-sicherer-geheimer-schluessel-fuer-jwt-token-generierung-2026
   expiration: 86400000
+  refresh-expiration: 604800000
 
 logging:
   level:

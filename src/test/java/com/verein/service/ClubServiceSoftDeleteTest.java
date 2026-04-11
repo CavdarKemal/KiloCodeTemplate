@@ -32,6 +32,9 @@ class ClubServiceSoftDeleteTest {
     @Mock
     private ClubRepository clubRepository;
 
+    @Mock
+    private AuditService auditService;
+
     @InjectMocks
     private ClubServiceImpl clubService;
 

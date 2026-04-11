@@ -39,6 +39,9 @@ class MemberServicePaginationTest {
     @Mock
     private ClubRepository clubRepository;
 
+    @Mock
+    private AuditService auditService;
+
     @InjectMocks
     private MemberServiceImpl memberService;
 
