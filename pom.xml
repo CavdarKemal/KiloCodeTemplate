@@ -35,12 +35,6 @@
     </parent>
 
     <dependencies>
-        <!-- Spring Boot Starters (legacy - deprecated in SB4) -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        
         <!-- Spring Boot 4 modular starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
